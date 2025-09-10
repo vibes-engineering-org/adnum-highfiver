@@ -8,6 +8,8 @@ import { DailyCheckIn } from "~/components/daily-checkin";
 import { BadgeSystem } from "~/components/badge-system";
 import { Leaderboard } from "~/components/leaderboard";
 import { RefCodeShare } from "~/components/ref-code-share";
+import { ShareCastButton } from "~/components/share-cast-button";
+import { UserContext } from "~/components/user-context";
 import { useHighFive } from "~/hooks/use-high-five";
 import { HandHeart } from "lucide-react";
 
@@ -44,14 +46,33 @@ export default function App() {
 
   return (
     <div className="w-[400px] mx-auto py-6 px-4 min-h-screen">
+      {/* User Profile at top right */}
+      <div className="flex justify-end mb-4">
+        <UserContext
+          showAvatar={true}
+          showUsername={true}
+          showFid={true}
+          avatarSize="sm"
+          layout="horizontal"
+          className="text-sm"
+          usernamePrefix="@"
+          fidPrefix="FID "
+        />
+      </div>
+
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold text-primary mb-2">High Five!</h1>
         <p className="text-muted-foreground">Connect with the Farcaster community</p>
       </div>
 
-      <div className="mb-6 text-center">
+      <div className="mb-6 text-center space-y-4">
         <HighFiveButton onHighFive={handleHighFive} />
-        <p className="mt-3 text-sm text-muted-foreground">
+        <ShareCastButton
+          text={`Just gave a high five on High Five! Join me and earn points! Use ref code ${stats.refCode}`}
+          variant="secondary"
+          className="w-full"
+        />
+        <p className="text-sm text-muted-foreground">
           Tap to give a high five and earn points!
         </p>
       </div>

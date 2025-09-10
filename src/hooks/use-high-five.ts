@@ -63,8 +63,8 @@ export function useHighFive() {
         setStats(prev => ({ ...prev, dailyHighFives: 0 }));
       }
     } else {
-      // Generate unique ref code for new users
-      const refCode = `HF${userId}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+      // Generate ref code using Farcaster ID (fid)
+      const refCode = userId !== "anonymous" ? userId : `HF${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
       setStats(prev => ({ ...prev, refCode }));
     }
     

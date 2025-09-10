@@ -28,13 +28,13 @@ export function HighFiveButton({ onHighFive, disabled, className }: HighFiveButt
       onClick={handleClick}
       disabled={disabled}
       className={cn(
-        "w-32 h-32 rounded-full text-6xl transition-all duration-300 hover:scale-110 active:scale-95",
+        "w-32 h-32 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-110 active:scale-95",
         isAnimating && "animate-pulse scale-110",
         className
       )}
       variant="default"
     >
-      🙏
+      High Five
     </Button>
   );
 }
