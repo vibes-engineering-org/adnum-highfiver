@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { HighFiveButton } from "~/components/high-five-button";
 import { UserStats } from "~/components/user-stats";
@@ -14,6 +15,9 @@ import { useHighFive } from "~/hooks/use-high-five";
 import { HandHeart } from "lucide-react";
 
 export default function App() {
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get('ref');
+  
   const {
     stats,
     leaderboard,
@@ -24,14 +28,31 @@ export default function App() {
     userId,
     username,
     isSDKLoaded,
+    canHighFiveFromRef,
+    hasHighFivedFromRef,
   } = useHighFive();
 
   const [highFiveCount, setHighFiveCount] = useState(0);
+  const [hasProcessedReferral, setHasProcessedReferral] = useState(false);
+
+  // Handle referral high five on app load
+  useEffect(() => {
+    if (isSDKLoaded && refCode && !hasProcessedReferral && canHighFiveFromRef(refCode)) {
+      // Automatically give a high five when opened from referral link
+      giveHighFive(true, refCode); // true indicates ref boost
+      setHighFiveCount(1);
+      setHasProcessedReferral(true);
+    }
+  }, [isSDKLoaded, refCode, hasProcessedReferral, canHighFiveFromRef, giveHighFive]);
 
   const handleHighFive = () => {
-    giveHighFive();
+    const hasRefBoost = refCode ? canHighFiveFromRef(refCode) : false;
+    giveHighFive(hasRefBoost, refCode || undefined);
     setHighFiveCount(prev => prev + 1);
   };
+
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const shareUrl = `${appUrl}?ref=${stats.refCode}`;
 
   if (!isSDKLoaded) {
     return (
@@ -67,11 +88,6 @@ export default function App() {
 
       <div className="mb-6 text-center space-y-4">
         <HighFiveButton onHighFive={handleHighFive} />
-        <ShareCastButton
-          text={`Just gave a high five on High Five! Join me and earn points! Use ref code ${stats.refCode}`}
-          variant="secondary"
-          className="w-full"
-        />
         <p className="text-sm text-muted-foreground">
           Tap to give a high five and earn points!
         </p>
@@ -96,7 +112,7 @@ export default function App() {
               badges={stats.badges}
               userRank={getUserRank()}
             />
-            <RefCodeShare refCode={stats.refCode} points={stats.points} />
+            <RefCodeShare refCode={stats.refCode} points={stats.points} shareUrl={shareUrl} />
           </TabsContent>
 
           <TabsContent value="checkin" className="mt-0">

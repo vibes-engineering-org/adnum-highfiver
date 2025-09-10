@@ -12,6 +12,7 @@ interface HighFiveStats {
   badges: string[];
   refCode: string;
   lastHighFiveDate: string | null;
+  usedRefCodes: string[];
 }
 
 interface LeaderboardEntry {
@@ -38,6 +39,7 @@ export function useHighFive() {
     badges: [],
     refCode: "",
     lastHighFiveDate: null,
+    usedRefCodes: [],
   });
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [hasCheckedInToday, setHasCheckedInToday] = useState(false);
@@ -65,7 +67,7 @@ export function useHighFive() {
     } else {
       // Generate ref code using Farcaster ID (fid)
       const refCode = userId !== "anonymous" ? userId : `HF${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-      setStats(prev => ({ ...prev, refCode }));
+      setStats(prev => ({ ...prev, refCode, usedRefCodes: [] }));
     }
     
     // Load global leaderboard
@@ -115,15 +117,18 @@ export function useHighFive() {
     return badges;
   };
 
-  const giveHighFive = useCallback((hasRefBoost = false) => {
+  const giveHighFive = useCallback((hasRefBoost = false, refCodeUsed?: string) => {
     setStats(prev => {
       const today = new Date().toDateString();
       const newTotalHighFives = prev.totalHighFives + 1;
       const newDailyHighFives = prev.lastHighFiveDate === today ? prev.dailyHighFives + 1 : 1;
       
       let pointsToAdd = POINTS_PER_HIGH_FIVE;
-      if (hasRefBoost) {
+      let updatedUsedRefCodes = prev.usedRefCodes;
+      
+      if (hasRefBoost && refCodeUsed) {
         pointsToAdd = Math.floor(pointsToAdd * REF_BOOST_MULTIPLIER);
+        updatedUsedRefCodes = [...prev.usedRefCodes, refCodeUsed];
       }
       
       const newStats = {
@@ -133,6 +138,7 @@ export function useHighFive() {
         points: prev.points + pointsToAdd,
         badges: getBadges(newTotalHighFives),
         lastHighFiveDate: today,
+        usedRefCodes: updatedUsedRefCodes,
       };
       
       updateLeaderboard(newStats);
@@ -171,6 +177,18 @@ export function useHighFive() {
     return userIndex >= 0 ? userIndex + 1 : null;
   }, [leaderboard, userId]);
 
+  const canHighFiveFromRef = useCallback((refCode: string) => {
+    // Can't use your own ref code
+    if (refCode === stats.refCode) return false;
+    // Can't use the same ref code twice
+    if (stats.usedRefCodes.includes(refCode)) return false;
+    return true;
+  }, [stats.refCode, stats.usedRefCodes]);
+
+  const hasHighFivedFromRef = useCallback((refCode: string) => {
+    return stats.usedRefCodes.includes(refCode);
+  }, [stats.usedRefCodes]);
+
   return {
     stats,
     leaderboard,
@@ -181,5 +199,7 @@ export function useHighFive() {
     userId,
     username,
     isSDKLoaded,
+    canHighFiveFromRef,
+    hasHighFivedFromRef,
   };
 }

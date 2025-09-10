@@ -34,7 +34,7 @@ export function HighFiveButton({ onHighFive, disabled, className }: HighFiveButt
       )}
       variant="default"
     >
-      High Five
+      🙏 High Five
     </Button>
   );
 }

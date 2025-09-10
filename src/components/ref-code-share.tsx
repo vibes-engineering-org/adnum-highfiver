@@ -10,14 +10,16 @@ import { useState } from "react";
 interface RefCodeShareProps {
   refCode: string;
   points: number;
+  shareUrl?: string;
 }
 
-export function RefCodeShare({ refCode, points }: RefCodeShareProps) {
+export function RefCodeShare({ refCode, points, shareUrl }: RefCodeShareProps) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(refCode);
+      const urlToCopy = shareUrl || refCode;
+      await navigator.clipboard.writeText(urlToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -25,8 +27,8 @@ export function RefCodeShare({ refCode, points }: RefCodeShareProps) {
     }
   };
 
-  const shareText = `Join me on High Five! Use my ref code ${refCode} to get bonus points when you give high fives! 🙏`;
-  const appUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const shareText = `Join me on High Five! Tap my link to automatically high five and get bonus points! 🙏`;
+  const finalShareUrl = shareUrl || (typeof window !== 'undefined' ? window.location.origin : '');
 
   return (
     <Card className="w-full max-w-md">
@@ -58,7 +60,7 @@ export function RefCodeShare({ refCode, points }: RefCodeShareProps) {
           
           <ShareCastButton
             text={shareText}
-            url={appUrl}
+            url={finalShareUrl}
             variant="default"
             className="flex-1"
           />
@@ -70,14 +72,14 @@ export function RefCodeShare({ refCode, points }: RefCodeShareProps) {
             <span className="font-medium">Boost Benefits</span>
           </div>
           <p className="text-sm text-green-600">
-            When someone uses your ref code, you both get 50% more points from high fives!
+            When someone taps your link, they automatically high five and you both get 50% more points!
           </p>
         </div>
 
         <div className="text-center space-y-1">
-          <p className="text-sm font-medium">How to use ref codes:</p>
+          <p className="text-sm font-medium">How it works:</p>
           <p className="text-xs text-muted-foreground">
-            Friends can mention your ref code in their casts to activate the point boost
+            Share your link! When friends tap it, they automatically give a high five with bonus points
           </p>
         </div>
       </CardContent>
